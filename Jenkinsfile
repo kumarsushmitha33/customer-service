@@ -1,7 +1,8 @@
 pipeline {
     agent any
     tools {
-        maven 'Maven 3' // make sure Maven is configured in Jenkins
+        jdk 'jdk17'          // ✅ Jenkins JDK name you added
+        maven 'Maven 3'      // your Maven installation name
     }
     stages {
         stage('Checkout') {
