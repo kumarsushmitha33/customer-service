@@ -50,7 +50,7 @@ pipeline {
                 /usr/local/bin/docker pull $DOCKER_USER/customer-service:latest
 
                 # Run new container
-                /usr/local/bin/docker run -d -p 8080:8080 --name customer-service $DOCKER_USER/customer-service:latest
+                /usr/local/bin/docker run -d -p 8085:8080 --name customer-service $DOCKER_USER/customer-service:latest
                 '''
             }
         }
