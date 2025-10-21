@@ -36,19 +36,26 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
-            steps {
-                echo '🚀 Deploying Customer Service container...'
-                script {
-                    sh '''
-                    /usr/local/bin/docker stop customer-service || true
-                    /usr/local/bin/docker rm customer-service || true
-                    /usr/local/bin/docker pull $DOCKER_USER/customer-service:latest
-                    /usr/local/bin/docker run -d -p 8080:8080 --name customer-service $DOCKER_USER/customer-service:latest
-                    '''
-                }
+       stage('Deploy') {
+    steps {
+        echo '🚀 Deploying Customer Service container...'
+        script {
+            withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                sh '''
+                # Stop and remove any old container
+                /usr/local/bin/docker stop customer-service || true
+                /usr/local/bin/docker rm customer-service || true
+
+                # Pull latest image from Docker Hub
+                /usr/local/bin/docker pull $DOCKER_USER/customer-service:latest
+
+                # Run new container
+                /usr/local/bin/docker run -d -p 8080:8080 --name customer-service $DOCKER_USER/customer-service:latest
+                '''
             }
         }
+    }
+}
     }
     post {
         success {
