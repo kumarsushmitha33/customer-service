@@ -22,19 +22,17 @@ pipeline {
                 sh 'mvn test'
             }
         }
-        stage('Docker Build & Push') {
-            steps {
-                echo '🐳 Building and pushing Docker image...'
-                script {
-                    def imageName = "sushmithakumar1512/customer-service"
-                    sh "docker build -t ${imageName}:latest ."
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                        sh "docker push ${imageName}:latest"
-                    }
-                }
-            }
+       stage('Docker Build & Push') {
+    steps {
+        echo "🐳 Building and pushing Docker image..."
+        script {
+            // Use absolute path for Docker binary
+            sh '/usr/local/bin/docker build -t sushmithakumar1512/customer-service:latest .'
+            sh 'echo $DOCKER_PASSWORD | /usr/local/bin/docker login -u sushmithakumar1512 --password-stdin'
+            sh '/usr/local/bin/docker push sushmithakumar1512/customer-service:latest'
         }
+    }
+}
     }
     post {
         success {
