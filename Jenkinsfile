@@ -1,8 +1,8 @@
 pipeline {
     agent any
     tools {
-        jdk 'jdk17'          // ✅ Jenkins JDK name you added
-        maven 'Maven 3'      // your Maven installation name
+        jdk 'jdk17'
+        maven 'Maven 3'
     }
     stages {
         stage('Checkout') {
@@ -22,24 +22,37 @@ pipeline {
                 sh 'mvn test'
             }
         }
-       stage('Docker Build & Push') {
-    steps {
-        echo '🐳 Building and pushing Docker image...'
-        script {
-            withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                sh '''
-                /usr/local/bin/docker build -t $DOCKER_USER/customer-service:latest .
-                echo $DOCKER_PASS | /usr/local/bin/docker login -u $DOCKER_USER --password-stdin
-                /usr/local/bin/docker push $DOCKER_USER/customer-service:latest
-                '''
+        stage('Docker Build & Push') {
+            steps {
+                echo '🐳 Building and pushing Docker image...'
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh '''
+                        /usr/local/bin/docker build -t $DOCKER_USER/customer-service:latest .
+                        echo $DOCKER_PASS | /usr/local/bin/docker login -u $DOCKER_USER --password-stdin
+                        /usr/local/bin/docker push $DOCKER_USER/customer-service:latest
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo '🚀 Deploying Customer Service container...'
+                script {
+                    sh '''
+                    /usr/local/bin/docker stop customer-service || true
+                    /usr/local/bin/docker rm customer-service || true
+                    /usr/local/bin/docker pull $DOCKER_USER/customer-service:latest
+                    /usr/local/bin/docker run -d -p 8080:8080 --name customer-service $DOCKER_USER/customer-service:latest
+                    '''
+                }
             }
         }
     }
-}
-    }
     post {
         success {
-            echo '✅ Customer Service build & test successful!'
+            echo '✅ Customer Service build, push & deploy successful!'
         }
         failure {
             echo '❌ Build failed!'
