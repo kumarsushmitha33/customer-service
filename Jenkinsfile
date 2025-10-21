@@ -22,6 +22,19 @@ pipeline {
                 sh 'mvn test'
             }
         }
+        stage('Docker Build & Push') {
+            steps {
+                echo '🐳 Building and pushing Docker image...'
+                script {
+                    def imageName = "kumarsushmitha33/customer-service"
+                    sh "docker build -t ${imageName}:latest ."
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                        sh "docker push ${imageName}:latest"
+                    }
+                }
+            }
+        }
     }
     post {
         success {
