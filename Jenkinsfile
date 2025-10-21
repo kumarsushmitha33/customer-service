@@ -24,12 +24,15 @@ pipeline {
         }
        stage('Docker Build & Push') {
     steps {
-        echo "🐳 Building and pushing Docker image..."
+        echo '🐳 Building and pushing Docker image...'
         script {
-            // Use absolute path for Docker binary
-            sh '/usr/local/bin/docker build -t sushmithakumar1512/customer-service:latest .'
-            sh 'echo $DOCKER_PASSWORD | /usr/local/bin/docker login -u sushmithakumar1512 --password-stdin'
-            sh '/usr/local/bin/docker push sushmithakumar1512/customer-service:latest'
+            withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                sh '''
+                /usr/local/bin/docker build -t $DOCKER_USER/customer-service:latest .
+                echo $DOCKER_PASS | /usr/local/bin/docker login -u $DOCKER_USER --password-stdin
+                /usr/local/bin/docker push $DOCKER_USER/customer-service:latest
+                '''
+            }
         }
     }
 }
