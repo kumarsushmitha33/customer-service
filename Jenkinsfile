@@ -9,7 +9,8 @@ pipeline {
             steps {
                 git branch: 'main', url: 'git@github.com:kumarsushmitha33/customer-service.git'
             }
-        }*/
+        }*/ 
+        /* For webhooks- the github URL should be like below. */
         stage('Checkout') {
             steps {
                 echo '📥 Checking out from GitHub using PAT...'
